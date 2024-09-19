@@ -60,7 +60,7 @@ class HomePage(Page):
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
-             FieldPanel("banner_title"),
+            FieldPanel("banner_title"),
             FieldPanel("banner_subtitle"),
             FieldPanel("banner_image"),
             FieldPanel("banner_cta")
