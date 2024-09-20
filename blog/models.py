@@ -1,13 +1,15 @@
 """Blog listing and Blog detail pages."""
 from django.db import models
+from django.shortcuts import render
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel
 from wagtail.fields import StreamField
 from streams import blocks
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 
 
 # Create your models here.
-class BlogListingPage(Page):
+class BlogListingPage(RoutablePageMixin, Page):
     """Listing page lists all Blog detail pages."""
 
     template = "blog/blog_listing_page.html"
@@ -23,7 +25,15 @@ class BlogListingPage(Page):
 
         context = super().get_context(request, *args, **kwargs)
         context["posts"] = BlogDetailPage.objects.live().public()
+        context["one_to_two"] = "Form one definition to another in one class"
+        context["a_special_link"] = self.reverse_subpage('latest_posts')
         return context
+    # '?' makes in regex last symbol '/' optional
+    @route(r'^latest/?$', name="latest_posts")
+    def latest_blog_posts(self, request, *args, **kwargs):
+        context = self.get_context(request, *args, **kwargs)
+        context["posts"] = context["posts"][:1]
+        return render(request, "blog/latest_posts.html", context)
 
 class BlogDetailPage(Page):
     """Blog detail page."""
