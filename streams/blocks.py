@@ -1,4 +1,4 @@
-"""Streamfields live in here."""
+"""StreamFields live in here."""
 
 # wagtail.core is deprecated??? 
 
@@ -51,7 +51,7 @@ class RichTextBlock(blocks.RichTextBlock):
 class SimpleRichTextBlock(blocks.RichTextBlock):
     """Richtext without (limited) all the features."""
     # No Struct just RichText Block
-    # Overriding  class in C:\NHSBT-Dev\env\Lib\site-packages\wagtail\blocks\field_block.py
+    # Overriding  class in .\env\Lib\site-packages\wagtail\blocks\field_block.py
     def __init__(self, required=True, help_text=None, editor="default", features=None, max_length=None, validators=(), search_index=True, **kwargs,):
         super().__init__(**kwargs)
         self.features = [
@@ -78,3 +78,34 @@ class CTABlock(blocks.StructBlock):
         template = "streams/cta_block.html"
         icon = "placeholder"
         label = "Call to Action"
+
+class LinkStructValue(blocks.StructValue):
+    """Additional logic for our URL"""
+    
+    # Technically more efficient than have logic in HTMl template
+    # no extra parsing from html to python
+    
+    def url(self):
+        button_page = self.get('button_page')
+        button_url = self.get('button_url')
+        
+        if button_page:
+            return button_page.url
+        elif button_url:
+            return button_url
+        
+        return None
+
+      
+class ButtonBlock(blocks.StructBlock):
+    """Add external or internal URL"""
+    
+    button_page = blocks.PageChooserBlock(required=False, help_text="If selected this url will be used first")
+    button_url = blocks.URLBlock(required=False, help_text="This url will be used secondary")
+    
+    class Meta: # noqa
+        template = "streams/button_block.html"
+        icon = "edit"
+        label = "Single Button"
+        value_class = LinkStructValue
+    
