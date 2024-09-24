@@ -6,9 +6,22 @@
 {% block content %}
     {% image self.blog_image fill-900x400 as banner %}
     <img src="{{ banner.url }}" alt="{{ banner.alt }}">
-    <h3 class="text-center" style="margin: 30px 0;">{{ self.custom_title }}</h3>
+    <div class="text-center">
+        <h3 style="margin: 30px 0;">{{ self.custom_title }}</h3>
+        <ul style="list-style: none;">
+            {% for item in self.blog_authors.all %}
+                {% image item.author.image fill-50x50 as img %}
+                <li>
+                    <img src="{{ img.url }}" alt="{{ img.alt }}">
+                    <strong>{{ item.author.name }}</strong>
+                    {% if item.author.website %}
+                        <a href="{{ item.author.website }}"> (Website)</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 
-    
     {% for content in self.blog_content %}
         {% include_block content %}
     {% endfor %}

@@ -1,11 +1,68 @@
 """Blog listing and Blog detail pages."""
+from modelcluster.fields import ParentalKey
 from django.db import models
 from django.shortcuts import render
-from wagtail.models import Page
-from wagtail.admin.panels import FieldPanel
+from wagtail.models import Page, Orderable
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel, InlinePanel
 from wagtail.fields import StreamField
 from streams import blocks
 from wagtail.contrib.routable_page.models import RoutablePageMixin, route
+from wagtail.snippets.models import register_snippet
+
+
+class BlogAuthorOrderable(Orderable):
+    """This allows us select author/s to blog post from snippets."""
+    
+    page = ParentalKey("blog.BlogDetailPage", related_name="blog_authors")
+    author = models.ForeignKey(
+        "blog.BlogAuthor",
+        on_delete=models.CASCADE
+    )
+    
+    panels = [
+        FieldPanel("author"),
+    ]
+
+# Snippets are for reusable admin code and possibility to edit from Wagtail admin
+# Like Authors
+class BlogAuthor(models.Model):
+    """Blog author snippets for Wagtail admin."""
+    
+    name = models.CharField(max_length=100)
+    website = models.URLField(blank=True, null=True)
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        blank=False,
+        null=True,
+        related_name="+",
+        on_delete=models.SET_NULL
+    )
+    
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("name"),
+                FieldPanel("image")
+            ],
+            heading="Name and Image"
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("website"),
+            ],
+            heading="Links"
+        )    
+    ]
+    
+    def __str__(self):
+        """String repr of this class"""
+        return self.name
+    
+    class Meta: # noqa
+        verbose_name = "Blog Author"
+        verbose_name_plural = "Blog Authors"
+
+register_snippet(BlogAuthor)
 
 
 # Create your models here.
@@ -78,5 +135,12 @@ class BlogDetailPage(Page):
     content_panels= Page.content_panels + [
         FieldPanel("custom_title"),
         FieldPanel("blog_image"),
-        FieldPanel("blog_content")
+        MultiFieldPanel(
+            [
+                InlinePanel("blog_authors", label="Author", min_num=1, max_num=4),
+                
+            ],
+            heading="Author(s)"
+        ),
+        FieldPanel("blog_content"),
     ]

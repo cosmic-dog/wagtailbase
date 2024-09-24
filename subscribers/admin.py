@@ -11,7 +11,7 @@ class SubscriberAdmin(SnippetViewSet):
     icon = "placeholder"
     menu_order = 290
     add_to_settings_menu = False
-    #exclude_from_explorer = False
+    exclude_from_explorer = False
     add_to_admin_menu = True
     list_display = ("email", "full_name",)
     search_fields = ("email", "full_name",)
