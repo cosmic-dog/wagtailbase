@@ -1,5 +1,6 @@
 """Blog listing and Blog detail pages."""
-from modelcluster.fields import ParentalKey
+from modelcluster.fields import ParentalKey, ParentalManyToManyField
+from django import forms
 from django.db import models
 from django.shortcuts import render
 from wagtail.models import Page, Orderable
@@ -10,6 +11,7 @@ from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.snippets.models import register_snippet
 
 
+# Orderable -----
 class BlogAuthorOrderable(Orderable):
     """This allows us select author/s to blog post from snippets."""
     
@@ -23,6 +25,8 @@ class BlogAuthorOrderable(Orderable):
         FieldPanel("author"),
     ]
 
+
+# Snippets -----
 # Snippets are for reusable admin code and possibility to edit from Wagtail admin
 # Like Authors
 class BlogAuthor(models.Model):
@@ -65,7 +69,34 @@ class BlogAuthor(models.Model):
 register_snippet(BlogAuthor)
 
 
-# Create your models here.
+class BlogCategory(models.Model):
+    """Blog snipper for blog category."""
+    
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(
+        verbose_name="slug",
+        allow_unicode=True,
+        max_length=255,
+        help_text="A slug to identify post by this category",
+    )
+    
+    panels = [
+        FieldPanel("name"),
+        FieldPanel("slug")
+    ]
+
+    def __str__(self):
+        """String repr of this class"""
+        return self.name
+    
+    class Meta: # noqa
+        verbose_name = "Blog Category"
+        verbose_name_plural = "Blog Categories"
+        ordering = ["name"]
+        
+register_snippet(BlogCategory) 
+
+# Pages -----
 class BlogListingPage(RoutablePageMixin, Page):
     """Listing page lists all Blog detail pages."""
 
@@ -84,7 +115,9 @@ class BlogListingPage(RoutablePageMixin, Page):
         context["posts"] = BlogDetailPage.objects.live().public()
         context["one_to_two"] = "Form one definition to another in one class"
         context["a_special_link"] = self.reverse_subpage('latest_posts')
+        context["categories"] = BlogCategory.objects.all()
         return context
+    
     # '?' makes in regex last symbol '/' optional
     @route(r'^latest/?$', name="latest_posts")
     def latest_blog_posts(self, request, *args, **kwargs):
@@ -119,6 +152,8 @@ class BlogDetailPage(Page):
         related_name="+",
         on_delete=models.SET_NULL,
     )
+    
+    categories = ParentalManyToManyField("blog.BlogCategory", blank=True)
 
     blog_content = StreamField(
         [ 
@@ -141,6 +176,12 @@ class BlogDetailPage(Page):
                 
             ],
             heading="Author(s)"
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("categories", widget=forms.CheckboxSelectMultiple)
+            ],
+            heading="Categories"
         ),
         FieldPanel("blog_content"),
     ]

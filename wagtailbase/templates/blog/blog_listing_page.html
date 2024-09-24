@@ -7,6 +7,16 @@
     <a href="{% routablepageurl page 'latest_posts' %}">View Latest</a>
     <br>
     <h2>{{ a_special_link }}</h2>
+    <br>
+    <h4>Categories</h4>
+    <ul>
+        {% for cat in categories %}
+            <li>
+                <a href="{{ url }}?category={{ cat.slug }}">{{ cat.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <br>
     {% for post in posts  %}
         <div class="row">
             <div class="col-sm-4">

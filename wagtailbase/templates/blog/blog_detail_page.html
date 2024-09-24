@@ -20,6 +20,14 @@
                 </li>
             {% endfor %}
         </ul>
+        <h4>Categories</h4>
+        <ul>
+            {% for cat in self.categories.all %}
+                <li>
+                    <a href="{{ self.get_parent.url }}?category={{ cat.slug }}">{{ cat.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 
     {% for content in self.blog_content %}
