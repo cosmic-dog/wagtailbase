@@ -140,12 +140,12 @@ class BlogListingPage(RoutablePageMixin, Page):
         return sitemap
 
 class BlogDetailPage(Page):
-    """Blog detail page."""
+    """Parent blog detail page."""
 
     template = "blog/blog_detail_page.html"
 
     custom_title = models.CharField(max_length=100, blank=False, null=False, help_text="Blog title")
-    blog_image = models.ForeignKey(
+    banner_image = models.ForeignKey(
         "wagtailimages.Image",
         blank=False,
         null=True,
@@ -169,7 +169,7 @@ class BlogDetailPage(Page):
 
     content_panels= Page.content_panels + [
         FieldPanel("custom_title"),
-        FieldPanel("blog_image"),
+        FieldPanel("banner_image"),
         MultiFieldPanel(
             [
                 InlinePanel("blog_authors", label="Author", min_num=1, max_num=4),
@@ -184,4 +184,30 @@ class BlogDetailPage(Page):
             heading="Categories"
         ),
         FieldPanel("blog_content"),
+    ]
+
+
+# First subclassed blog post page -----
+class ArticleBlogPage(BlogDetailPage):
+    """A subclassed blog post page for articles."""
+    
+    template = "blog/article_blog_page.html"
+    
+    subtitle = models.CharField(max_length=100, blank=True, null=True)
+    intro_image = models.ForeignKey(
+        "wagtailimages.Image",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text='Best size for this image is 1400x400'
+    )
+    
+    content_panels = BlogDetailPage.content_panels + [
+         MultiFieldPanel(
+            [
+                FieldPanel("subtitle"),
+                FieldPanel("intro_image")
+            ],
+            heading="Article panels"
+        ),
     ]
