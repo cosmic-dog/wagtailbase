@@ -1,6 +1,7 @@
 """Blog listing and Blog detail pages."""
 from modelcluster.fields import ParentalKey, ParentalManyToManyField
 from django import forms
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
 from django.shortcuts import render
 from wagtail.models import Page, Orderable
@@ -112,7 +113,21 @@ class BlogListingPage(RoutablePageMixin, Page):
         """Adding custom stuff to our context"""
 
         context = super().get_context(request, *args, **kwargs)
-        context["posts"] = BlogDetailPage.objects.live().public()
+        
+        all_posts = BlogDetailPage.objects.live().public().order_by('-first_published_at')
+        paginator = Paginator(all_posts, 1) 
+        page = request.GET.get("page")  # returns page number - Integer
+                                        # getting ?page= URL Query
+        
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+            
+        context["posts"] = posts
+            
         context["one_to_two"] = "Form one definition to another in one class"
         context["a_special_link"] = self.reverse_subpage('latest_posts')
         context["categories"] = BlogCategory.objects.all()
@@ -188,11 +203,17 @@ class BlogDetailPage(Page):
 
 
 # First subclassed blog post page -----
+# Or child page of BlogDetailPage
+# BlogDetailPage.objects.live().exact_type(BlogDetailPage) - to get exact type of specific class
+# BlogDetailPage.objects.live().not_exact_type(BlogDetailPage) - to get other classes which are not exact type
+# BlogDetailPage.objects.live().not_exact_type(BlogDetailPage).specific(defer=True)
 class ArticleBlogPage(BlogDetailPage):
     """A subclassed blog post page for articles."""
     
     template = "blog/article_blog_page.html"
     
+    # To get Specific property from Subclass use .specific <-( Wagtail way to get subclass property)
+    # .specific is adding extra DB queries, so be careful
     subtitle = models.CharField(max_length=100, blank=True, null=True)
     intro_image = models.ForeignKey(
         "wagtailimages.Image",

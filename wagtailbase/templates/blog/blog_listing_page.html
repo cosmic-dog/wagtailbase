@@ -19,7 +19,7 @@
     <br>
     {% for post in posts  %}
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-8">
                 {% image post.banner_image fill-250x250 as blog_img %}
                 <a href="{{ post.url }}">
                     <img src="{{ blog_img.url }}" alt="{{ blog_img.alt }}">
@@ -28,14 +28,45 @@
                     <a href="{{ post.url }}">
                         <h4>{{ post.custom_title }}</h4>  
                     </a>
-                    {% if post.subtitle %}
-                        <p>{{ post.subtitle }}</p>
+                    {% comment %} Get Specific property from Subclass {% endcomment %}
+                    {% if post.specific.subtitle %}
+                        <p>{{ post.specific.subtitle }}</p>
                     {% endif %}
                 </div>
             </div> 
         </div>
         <br>  
     {% endfor %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            {% if posts.paginator.num_pages > 1 %}
+                <ul class="pagination">
+                    {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a href="?page={{ posts.previous_page_number}}" class="page-link">
+                                <span>&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in posts.paginator.page_range %}
+                        <li class="page-item {% if page_num == posts.number %}active{% endif %}">
+                            <a href="?page={{ page_num }}" class="page-link">{{ page_num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if posts.has_next %}
+                        <li class="page-item">
+                            <a href="?page={{ posts.next_page_number}}" class="page-link">
+                                <span>&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
             
 {% endblock content %}
 
